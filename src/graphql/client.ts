@@ -1,7 +1,7 @@
 import { LinearClient } from '@linear/sdk';
 import { DocumentNode } from 'graphql';
-import { 
-  CreateIssueInput, 
+import {
+  CreateIssueInput,
   CreateIssuesInput,
   CreateIssueResponse,
   CreateIssuesResponse,
@@ -100,7 +100,7 @@ export class LinearGraphQLClient {
   async createProjectWithIssues(projectInput: ProjectInput, issues: CreateIssueInput[]): Promise<ProjectResponse> {
     // Create project first
     const projectResult = await this.createProject(projectInput);
-    
+
     if (!projectResult.projectCreate.success) {
       throw new Error('Failed to create project');
     }
@@ -135,7 +135,16 @@ export class LinearGraphQLClient {
   // Bulk update issues
   async updateIssues(ids: string[], input: UpdateIssueInput): Promise<UpdateIssuesResponse> {
     const { UPDATE_ISSUES_MUTATION } = await import('./mutations.js');
-    return this.execute<UpdateIssuesResponse>(UPDATE_ISSUES_MUTATION, { ids, input });
+
+    // Convert ids and input to issues array format for issueBatchUpdate
+    const issues = ids.map(id => ({
+      id,
+      ...input
+    }));
+
+    return this.execute<UpdateIssuesResponse>(UPDATE_ISSUES_MUTATION, {
+      input: { issues }
+    });
   }
 
   // Create multiple labels
@@ -146,9 +155,9 @@ export class LinearGraphQLClient {
 
   // Search issues with pagination
   async searchIssues(
-    filter: SearchIssuesInput['filter'], 
-    first: number = 50, 
-    after?: string, 
+    filter: SearchIssuesInput['filter'],
+    first: number = 50,
+    after?: string,
     orderBy: string = "updatedAt"
   ): Promise<SearchIssuesResponse> {
     const { SEARCH_ISSUES_QUERY } = await import('./queries.js');

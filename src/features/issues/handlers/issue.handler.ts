@@ -38,21 +38,21 @@ export class IssueHandler extends BaseHandler implements IssueHandlerMethods {
 
       // Process input to ensure correct types
       const processedArgs = { ...args };
-      
+
       // Convert estimate to integer if present
       if (processedArgs.estimate !== undefined) {
         processedArgs.estimate = parseInt(String(processedArgs.estimate), 10);
-        
+
         // If parsing fails, remove the estimate field
         if (isNaN(processedArgs.estimate)) {
           delete processedArgs.estimate;
         }
       }
-      
+
       // Convert priority to integer if present
       if (processedArgs.priority !== undefined) {
         processedArgs.priority = parseInt(String(processedArgs.priority), 10);
-        
+
         // If parsing fails or out of range, use default priority
         if (isNaN(processedArgs.priority) || processedArgs.priority < 0 || processedArgs.priority > 4) {
           processedArgs.priority = 0;
@@ -101,7 +101,7 @@ export class IssueHandler extends BaseHandler implements IssueHandlerMethods {
 
       return this.createResponse(
         `Successfully created ${createdIssues.length} issues:\n` +
-        createdIssues.map(issue => 
+        createdIssues.map(issue =>
           `- ${issue.identifier}: ${issue.title}\n  URL: ${issue.url}`
         ).join('\n')
       );
@@ -123,26 +123,28 @@ export class IssueHandler extends BaseHandler implements IssueHandlerMethods {
       }
 
       let result;
-      
+
       // Handle single issue update vs bulk update differently
       if (args.issueIds.length === 1) {
         // For a single issue, use updateIssue which uses the correct 'id' parameter
         result = await client.updateIssue(args.issueIds[0], args.update) as UpdateIssuesResponse;
-        
-        if (!result.issueUpdate.success) {
+
+        // Single issue update returns issueUpdate field
+        if (!result.issueUpdate?.success) {
           throw new Error('Failed to update issue');
         }
-        
+
         return this.createResponse(`Successfully updated issue`);
       } else {
         // For multiple issues, use updateIssues
         result = await client.updateIssues(args.issueIds, args.update) as UpdateIssuesResponse;
-        
-        if (!result.issueUpdate.success) {
+
+        // Bulk update returns issueBatchUpdate field
+        if (!result.issueBatchUpdate?.success) {
           throw new Error('Failed to update issues');
         }
-        
-        const updatedCount = result.issueUpdate.issues.length;
+
+        const updatedCount = result.issueBatchUpdate.issues.length;
         return this.createResponse(`Successfully updated ${updatedCount} issues`);
       }
     } catch (error) {
@@ -158,7 +160,7 @@ export class IssueHandler extends BaseHandler implements IssueHandlerMethods {
       const client = this.verifyAuth();
 
       const filter: Record<string, unknown> = {};
-      
+
       if (args.query) {
         // For both identifier and text searches, use the title filter with contains
         // This is a workaround since Linear API doesn't directly support identifier filtering
@@ -167,7 +169,7 @@ export class IssueHandler extends BaseHandler implements IssueHandlerMethods {
           { number: { eq: this.extractIssueNumber(args.query) } }
         ];
       }
-      
+
       if (args.filter?.project?.id?.eq) {
         filter.project = { id: { eq: args.filter.project.id.eq } };
       }

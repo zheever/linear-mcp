@@ -95,7 +95,11 @@ export interface IssueBatchResponse {
 }
 
 export interface UpdateIssuesResponse {
-  issueUpdate: {
+  issueUpdate?: {
+    success: boolean;
+    issues: Issue[];
+  };
+  issueBatchUpdate?: {
     success: boolean;
     issues: Issue[];
   };

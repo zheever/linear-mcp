@@ -1,8 +1,8 @@
 import { jest, describe, it, expect, beforeEach } from '@jest/globals';
 import { LinearGraphQLClient } from '../graphql/client';
 import { LinearClient } from '@linear/sdk';
-import { 
-  CreateIssueInput, 
+import {
+  CreateIssueInput,
   CreateIssueResponse,
   CreateIssuesResponse,
   UpdateIssueInput,
@@ -244,7 +244,7 @@ describe('LinearGraphQLClient', () => {
         description: 'Description',
         teamId: 'team-1'
       };
-      
+
       const result: CreateIssueResponse = await graphqlClient.createIssue(input);
 
       // Verify single mutation call with direct input (not array)
@@ -603,7 +603,7 @@ describe('LinearGraphQLClient', () => {
     it('should update multiple issues with a single mutation', async () => {
       const mockResponse = {
         data: {
-          issueUpdate: {
+          issueBatchUpdate: {
             success: true,
             issues: [
               {
@@ -635,8 +635,12 @@ describe('LinearGraphQLClient', () => {
       expect(mockRawRequest).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          ids,
-          input: updateInput
+          input: {
+            issues: [
+              { id: 'issue-1', stateId: 'state-2' },
+              { id: 'issue-2', stateId: 'state-2' }
+            ]
+          }
         })
       );
     });
@@ -1208,14 +1212,14 @@ describe('LinearGraphQLClient', () => {
 
         // Verify all three mutations were called
         expect(mockRawRequest).toHaveBeenCalledTimes(3);
-        
+
         // Verify each call had the correct input
-        expect(mockRawRequest).toHaveBeenNthCalledWith(1, 
+        expect(mockRawRequest).toHaveBeenNthCalledWith(1,
           expect.any(String),
           expect.objectContaining({ input: milestones[0] })
         );
         expect(mockRawRequest).toHaveBeenNthCalledWith(2,
-          expect.any(String), 
+          expect.any(String),
           expect.objectContaining({ input: milestones[1] })
         );
         expect(mockRawRequest).toHaveBeenNthCalledWith(3,
