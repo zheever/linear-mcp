@@ -136,14 +136,9 @@ export class LinearGraphQLClient {
   async updateIssues(ids: string[], input: UpdateIssueInput): Promise<UpdateIssuesResponse> {
     const { UPDATE_ISSUES_MUTATION } = await import('./mutations.js');
 
-    // Convert ids and input to issues array format for issueBatchUpdate
-    const issues = ids.map(id => ({
-      id,
-      ...input
-    }));
-
     return this.execute<UpdateIssuesResponse>(UPDATE_ISSUES_MUTATION, {
-      input: { issues }
+      ids,
+      input
     });
   }
 

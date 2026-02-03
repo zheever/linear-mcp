@@ -91,8 +91,8 @@ export const UPDATE_ISSUE_MUTATION = gql`
 `;
 
 export const UPDATE_ISSUES_MUTATION = gql`
-  mutation UpdateIssues($input: IssueBatchUpdateInput!) {
-    issueBatchUpdate(input: $input) {
+  mutation UpdateIssues($ids: [UUID!]!, $input: IssueUpdateInput!) {
+    issueBatchUpdate(ids: $ids, input: $input) {
       success
       issues {
         id
